@@ -8,6 +8,40 @@ public static class EdgeButtonStyles
             new SolidColorBrush(Colors.White, 1),
             new SolidColorBrush(Colors.Black, 1),
             new SolidColorBrush(Colors.White, 0.9),
+            new SolidColorBrush(Colors.Black, 1),
+            new SolidColorBrush(Colors.White, 0.75),
             new SolidColorBrush(Colors.Black, 1)
+        );
+    public static readonly EdgeButtonStyle Secondary = new EdgeButtonStyle(
+            new SolidColorBrush(Colors.White, 0.05),
+            new SolidColorBrush(Colors.White, 0.75),
+            new SolidColorBrush(Colors.White, 0.25),
+            new SolidColorBrush(Colors.White, 1),
+            new SolidColorBrush(Colors.White, 0.5),
+            new SolidColorBrush(Colors.White, 1)
+        );
+    public static readonly EdgeButtonStyle Ghost = new EdgeButtonStyle(
+            new SolidColorBrush(Colors.White, 0),
+            new SolidColorBrush(Colors.White, 0.75),
+            new SolidColorBrush(Colors.White, 0.1),
+            new SolidColorBrush(Colors.White, 1),
+            new SolidColorBrush(Colors.White, 0.25),
+            new SolidColorBrush(Colors.White, 1)
+        );
+    public static readonly EdgeButtonStyle Outline = new EdgeButtonStyle(
+            new SolidColorBrush(Colors.White, 1),
+            new SolidColorBrush(Colors.Black, 1),
+            new SolidColorBrush(Colors.White, 0.9),
+            new SolidColorBrush(Colors.Black, 1),
+            new SolidColorBrush(Colors.White, 0.75),
+            new SolidColorBrush(Colors.Black, 1)
+        );
+    public static readonly EdgeButtonStyle Destructive = new EdgeButtonStyle(
+            new SolidColorBrush(Colors.Red, 0.25),
+            new SolidColorBrush(Colors.White, 0.75),
+            new SolidColorBrush(Colors.Red, 0.5),
+            new SolidColorBrush(Colors.White, 1),
+            new SolidColorBrush(Colors.Red, 0.75),
+            new SolidColorBrush(Colors.White, 1)
         );
 }

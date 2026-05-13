@@ -19,7 +19,30 @@ public class EdgeButton : Button
         Orientation = Avalonia.Layout.Orientation.Horizontal
     };
 
-    private TextBlock? _text;
+    private TextBlock _text = new TextBlock
+    {
+        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+        Transitions = new Transitions
+                {
+                    new BrushTransition
+                    {
+                        Property = ForegroundProperty,
+                        Duration = TimeSpan.FromMilliseconds(250)
+                    }
+                }
+    };
+    private LucideIcon _icon = new LucideIcon
+    {
+        Size = 16,
+        Transitions = new Transitions
+                {
+                    new BrushTransition
+                    {
+                        Property = ForegroundProperty,
+                        Duration = TimeSpan.FromMilliseconds(250)
+                    }
+                }
+    };
 
     /// <summary>
     /// Text StyledProperty definition
@@ -71,7 +94,7 @@ public class EdgeButton : Button
 
     static EdgeButton()
     {
-        VariantProperty.Changed.AddClassHandler<EdgeButton>((x, e) => x.ApplyVariant());
+        VariantProperty.Changed.AddClassHandler<EdgeButton>((x, e) => x.UpdateStyle());
         IconProperty.Changed.AddClassHandler<EdgeButton>((x, e) => x.UpdateContent());
         TextProperty.Changed.AddClassHandler<EdgeButton>((x, e) => x.UpdateContent());
     }
@@ -101,6 +124,12 @@ public class EdgeButton : Button
 
         RenderTransformOrigin = RelativePoint.Center;
 
+        EdgeButtonStyle style = ResolveStyle();
+        Background = style.Background;
+        _text.Foreground = style.Foreground;
+        _icon.Foreground = style.Foreground;
+        
+
         Transitions = EdgeButtonTransitions();
     }
 
@@ -121,39 +150,25 @@ public class EdgeButton : Button
         };
     }
 
-    private void ApplyVariant()
-    {
-        switch (Variant)
-        {
-            case EdgeButtonVariant.Primary:
-                Background = new SolidColorBrush(Colors.White);
-                break;
-            case EdgeButtonVariant.Secondary:
-                Background = new SolidColorBrush(Colors.White, 0.2);
-                break;
-            case EdgeButtonVariant.Ghost:
-                Background = new SolidColorBrush(Colors.White, 0);
-                break;
-            case EdgeButtonVariant.Outline:
-                Background = Brushes.Gray;
-                BorderBrush = Brushes.Wheat;
-                break;
-            case EdgeButtonVariant.Destructive:
-                Background = Brushes.Red;
-                break;
-            default:
-                break;
-        }
-    }
-
     private void UpdateStyle()
     {
         EdgeButtonStyle style = ResolveStyle();
 
         if(_isHovered)
         {
+            Background = style.HoverBackground;
+            _text.Foreground = style.HoverForeground;
+            _icon.Foreground = style.HoverForeground;
+        }else if (_isPressed)
+        {
+            Background = style.PressBackground;
+            _text.Foreground = style.PressForeground;
+            _icon.Foreground = style.PressForeground;
+        } else
+        {
             Background = style.Background;
-            if(_text != null)
+            _text.Foreground = style.Foreground;
+            _icon.Foreground = style.Foreground;
         }
     }
 
@@ -167,16 +182,16 @@ public class EdgeButton : Button
                 style = EdgeButtonStyles.Primary;
                 break;
             case EdgeButtonVariant.Secondary:
-                style = EdgeButtonStyles.Primary;
+                style = EdgeButtonStyles.Secondary;
                 break;
             case EdgeButtonVariant.Ghost:
-                style = EdgeButtonStyles.Primary;
+                style = EdgeButtonStyles.Ghost;
                 break;
             case EdgeButtonVariant.Outline:
-                style = EdgeButtonStyles.Primary;
+                style = EdgeButtonStyles.Outline;
                 break;
             case EdgeButtonVariant.Destructive:
-                style = EdgeButtonStyles.Primary;
+                style = EdgeButtonStyles.Destructive;
                 break;
             default:
                 style = EdgeButtonStyles.Primary;
@@ -192,33 +207,14 @@ public class EdgeButton : Button
 
         if (Icon != null)
         {
-            LucideIcon icon = new LucideIcon
-            {
-                Kind = Icon,
-                Size = 16
-            };
-            _content.Children.Add(icon);
+            _icon.Kind = Icon;
+            _content.Children.Add(_icon);
         }
 
         if (!string.IsNullOrWhiteSpace(Text))
         {
-            _text = new TextBlock
-            {
-                Text = Text,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                Foreground = new SolidColorBrush(Colors.White, 0.65),
-                Transitions = new Transitions
-                {
-                    new BrushTransition
-                    {
-                        Property = ForegroundProperty,
-                        Duration = TimeSpan.FromMilliseconds(250)
-                    }
-                }
-            };
-
+            _text.Text = Text;
             _content.Children.Add(_text);
-
             Padding = new Thickness(8, 8, 12, 8);
         }
 
@@ -246,7 +242,7 @@ public class EdgeButton : Button
     private void HandlePointerEntered()
     {
         _isHovered = true;
-        HandleHoverState();
+        UpdateStyle();
         OnEdgePointerEntered();
     }
 
@@ -254,42 +250,8 @@ public class EdgeButton : Button
     private void HandlePointerExited()
     {
         _isHovered = false;
-        HandleHoverState();
+        UpdateStyle();
         OnEdgePointerExited();
-    }
-
-    private void HandleHoverState()
-    {
-        switch (Variant)
-        {
-            case EdgeButtonVariant.Primary:
-                break;
-            case EdgeButtonVariant.Secondary:
-                break;
-            case EdgeButtonVariant.Ghost:
-                if (_isHovered)
-                {
-                    Background = new SolidColorBrush(Colors.White, 0.05);
-                    if(_text != null)
-                    {
-                        _text.Foreground = new SolidColorBrush(Colors.White, 1);
-                    }
-                } else
-                {
-                    Background = new SolidColorBrush(Colors.White, 0);
-                    if (_text != null)
-                    {
-                        _text.Foreground = new SolidColorBrush(Colors.White, 0.65);
-                    }
-                }
-                break;
-            case EdgeButtonVariant.Outline:
-                break;
-            case EdgeButtonVariant.Destructive:
-                break;
-            default:
-                break;
-        }
     }
 
     protected virtual void OnEdgePointerPressed() { }
@@ -299,7 +261,7 @@ public class EdgeButton : Button
 
         var builder = TransformOperations.CreateBuilder(1);
 
-        builder.AppendScale(0.9, 0.9);
+        builder.AppendScale(0.95, 0.95);
 
         RenderTransform = builder.Build();
 

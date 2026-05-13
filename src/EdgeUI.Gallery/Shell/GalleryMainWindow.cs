@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Media;
-using EdgeUI.Controls;
+using EdgeUI.Controls.EdgeButton;
 
 namespace EdgeUI.Gallery.Shell;
 
@@ -20,7 +20,12 @@ public class GalleryMainWindow : Window
             Spacing = 25,
             Children =
             {
-                
+                new EdgeButton
+                {
+                    Text = "Primary",
+                    Icon = Lucide.Avalonia.LucideIconKind.Coffee,
+                    Variant = EdgeButtonVariant.Primary
+                },
                 new EdgeButton
                 {
                     Text = "Secondary",
