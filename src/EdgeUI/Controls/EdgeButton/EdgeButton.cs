@@ -1,20 +1,25 @@
 ﻿using Avalonia;
 using Avalonia.Animation;
-using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Transformation;
-using Avalonia.Styling;
 using Lucide.Avalonia;
 
-namespace EdgeUI.Controls;
+namespace EdgeUI.Controls.EdgeButton;
 
 public class EdgeButton : Button
 {
     private bool _isHovered;
     private bool _isPressed;
+    private bool _isDisabled;
+    private bool _isLoading;
 
-    private readonly StackPanel _content;
+    private readonly StackPanel _content = new StackPanel
+        {
+        Orientation = Avalonia.Layout.Orientation.Horizontal
+    };
+
+    private TextBlock? _text;
 
     /// <summary>
     /// Text StyledProperty definition
@@ -66,12 +71,21 @@ public class EdgeButton : Button
 
     static EdgeButton()
     {
-        VariantProperty.Changed.AddClassHandler<EdgeButton>((x, e) => x.UpdateVariant());
+        VariantProperty.Changed.AddClassHandler<EdgeButton>((x, e) => x.ApplyVariant());
         IconProperty.Changed.AddClassHandler<EdgeButton>((x, e) => x.UpdateContent());
         TextProperty.Changed.AddClassHandler<EdgeButton>((x, e) => x.UpdateContent());
     }
 
     public EdgeButton()
+    {
+        Content = _content;
+
+        ApplyInitialStyles();
+
+        WireEvents();
+    }
+
+    private void ApplyInitialStyles()
     {
         MinWidth = 32;
         MinHeight = 32;
@@ -82,47 +96,94 @@ public class EdgeButton : Button
 
         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
         VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top;
-
         HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center;
         VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center;
 
-        Transitions = new Transitions
+        RenderTransformOrigin = RelativePoint.Center;
+
+        Transitions = EdgeButtonTransitions();
+    }
+
+    private Transitions EdgeButtonTransitions()
+    {
+        return new Transitions
         {
             new TransformOperationsTransition
             {
                 Property = RenderTransformProperty,
-                Duration = TimeSpan.FromMilliseconds(200),
-                Easing = new QuadraticEaseOut()
+                Duration = TimeSpan.FromMilliseconds(250)
+            },
+            new BrushTransition
+            {
+                Property = BackgroundProperty,
+                Duration = TimeSpan.FromMilliseconds(250)
             }
         };
-
-        _content = new StackPanel
-        {
-            Orientation = Avalonia.Layout.Orientation.Horizontal
-        };
-
-        Content = _content;
-
-        WireEvents();
     }
 
-    private void UpdateVariant()
+    private void ApplyVariant()
     {
         switch (Variant)
         {
-            case EdgeButtonVariant.Default:
-                Foreground = Brushes.Blue;
-                break;
             case EdgeButtonVariant.Primary:
-                Foreground = Brushes.Purple;
+                Background = new SolidColorBrush(Colors.White);
                 break;
             case EdgeButtonVariant.Secondary:
+                Background = new SolidColorBrush(Colors.White, 0.2);
                 break;
             case EdgeButtonVariant.Ghost:
+                Background = new SolidColorBrush(Colors.White, 0);
+                break;
+            case EdgeButtonVariant.Outline:
+                Background = Brushes.Gray;
+                BorderBrush = Brushes.Wheat;
+                break;
+            case EdgeButtonVariant.Destructive:
+                Background = Brushes.Red;
                 break;
             default:
                 break;
         }
+    }
+
+    private void UpdateStyle()
+    {
+        EdgeButtonStyle style = ResolveStyle();
+
+        if(_isHovered)
+        {
+            Background = style.Background;
+            if(_text != null)
+        }
+    }
+
+    private EdgeButtonStyle ResolveStyle()
+    {
+        EdgeButtonStyle style;
+
+        switch (Variant)
+        {
+            case EdgeButtonVariant.Primary:
+                style = EdgeButtonStyles.Primary;
+                break;
+            case EdgeButtonVariant.Secondary:
+                style = EdgeButtonStyles.Primary;
+                break;
+            case EdgeButtonVariant.Ghost:
+                style = EdgeButtonStyles.Primary;
+                break;
+            case EdgeButtonVariant.Outline:
+                style = EdgeButtonStyles.Primary;
+                break;
+            case EdgeButtonVariant.Destructive:
+                style = EdgeButtonStyles.Primary;
+                break;
+            default:
+                style = EdgeButtonStyles.Primary;
+                break;
+        }
+
+        return style;
     }
 
     private void UpdateContent()
@@ -131,20 +192,32 @@ public class EdgeButton : Button
 
         if (Icon != null)
         {
-            _content.Children.Add(new LucideIcon
+            LucideIcon icon = new LucideIcon
             {
                 Kind = Icon,
                 Size = 16
-            });
+            };
+            _content.Children.Add(icon);
         }
 
         if (!string.IsNullOrWhiteSpace(Text))
         {
-            _content.Children.Add(new TextBlock
+            _text = new TextBlock
             {
                 Text = Text,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-            });
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                Foreground = new SolidColorBrush(Colors.White, 0.65),
+                Transitions = new Transitions
+                {
+                    new BrushTransition
+                    {
+                        Property = ForegroundProperty,
+                        Duration = TimeSpan.FromMilliseconds(250)
+                    }
+                }
+            };
+
+            _content.Children.Add(_text);
 
             Padding = new Thickness(8, 8, 12, 8);
         }
@@ -189,29 +262,30 @@ public class EdgeButton : Button
     {
         switch (Variant)
         {
-            case EdgeButtonVariant.Default:
-                if (_isHovered)
-                {
-                    Background = Brushes.Yellow;
-                }
-                else
-                {
-                    Background = Brushes.Transparent;
-                }
-                break;
             case EdgeButtonVariant.Primary:
-                if (_isHovered)
-                {
-                    Background = Brushes.Red;
-                }
-                else
-                {
-                    Background = Brushes.Transparent;
-                }
                 break;
             case EdgeButtonVariant.Secondary:
                 break;
             case EdgeButtonVariant.Ghost:
+                if (_isHovered)
+                {
+                    Background = new SolidColorBrush(Colors.White, 0.05);
+                    if(_text != null)
+                    {
+                        _text.Foreground = new SolidColorBrush(Colors.White, 1);
+                    }
+                } else
+                {
+                    Background = new SolidColorBrush(Colors.White, 0);
+                    if (_text != null)
+                    {
+                        _text.Foreground = new SolidColorBrush(Colors.White, 0.65);
+                    }
+                }
+                break;
+            case EdgeButtonVariant.Outline:
+                break;
+            case EdgeButtonVariant.Destructive:
                 break;
             default:
                 break;
@@ -223,7 +297,11 @@ public class EdgeButton : Button
     {
         _isPressed = true;
 
-        RenderTransform = new ScaleTransform(0.9, 0.9);
+        var builder = TransformOperations.CreateBuilder(1);
+
+        builder.AppendScale(0.9, 0.9);
+
+        RenderTransform = builder.Build();
 
         OnEdgePointerPressed();
     }
@@ -232,16 +310,13 @@ public class EdgeButton : Button
     private void HandlePointerReleased()
     {
         _isPressed = false;
-        
-        RenderTransform = new ScaleTransform(1.0, 1.0);
+
+        var builder = TransformOperations.CreateBuilder(1);
+
+        builder.AppendScale(1.0, 1.0);
+
+        RenderTransform = builder.Build();
+
         OnEdgePointerReleased();
     }
-}
-
-public enum EdgeButtonVariant
-{
-    Default,
-    Primary,
-    Secondary,
-    Ghost
 }
