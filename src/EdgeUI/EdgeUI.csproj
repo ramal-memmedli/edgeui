@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="12.0.2" />
+    <PackageReference Include="Lucide.Avalonia" Version="0.2.6" />
   </ItemGroup>
 
 </Project>

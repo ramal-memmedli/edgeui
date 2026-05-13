@@ -4,11 +4,11 @@ using EdgeUI.Windows;
 
 namespace EdgeUI.Controls;
 
-public class TitleBar : Grid
+public class EdgeTitleBar : Grid
 {
     private readonly EdgeWindow _window;
 
-    public TitleBar(EdgeWindow window)
+    public EdgeTitleBar(EdgeWindow window)
     {
         _window = window;
 
@@ -34,6 +34,8 @@ public class TitleBar : Grid
 
         SetColumn(actions, 1);
         Children.Add(actions);
+
+        EnableDrag();
     }
 
     private void EnableDrag()

@@ -9,7 +9,7 @@ namespace EdgeUI.Windows;
 /// </summary>
 public class EdgeWindow : Window
 {
-    private TitleBar _titleBar;
+    private EdgeTitleBar _titleBar;
     private Border _root;
 
     public EdgeWindow()
@@ -19,14 +19,14 @@ public class EdgeWindow : Window
 
         Background = ThemeTokens.Colors.Surface;
 
-        WindowDecorations = WindowDecorations.None;
+        ExtendClientAreaToDecorationsHint = true;
 
         Build();
     }
 
     private void Build()
     {
-        _titleBar = new TitleBar(this);
+        _titleBar = new EdgeTitleBar(this);
 
         _root = new Border
         {
