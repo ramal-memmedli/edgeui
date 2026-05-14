@@ -1,7 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
-using Avalonia.Media;
+using Avalonia.Input;
 using Avalonia.Media.Transformation;
 using Lucide.Avalonia;
 
@@ -9,41 +9,6 @@ namespace EdgeUI.Controls.EdgeButton;
 
 public class EdgeButton : Button
 {
-    private bool _isHovered;
-    private bool _isPressed;
-    private bool _isDisabled;
-    private bool _isLoading;
-
-    private readonly StackPanel _content = new StackPanel
-        {
-        Orientation = Avalonia.Layout.Orientation.Horizontal
-    };
-
-    private TextBlock _text = new TextBlock
-    {
-        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-        Transitions = new Transitions
-                {
-                    new BrushTransition
-                    {
-                        Property = ForegroundProperty,
-                        Duration = TimeSpan.FromMilliseconds(150)
-                    }
-                }
-    };
-    private LucideIcon _icon = new LucideIcon
-    {
-        Size = 16,
-        Transitions = new Transitions
-                {
-                    new BrushTransition
-                    {
-                        Property = ForegroundProperty,
-                        Duration = TimeSpan.FromMilliseconds(150)
-                    }
-                }
-    };
-
     /// <summary>
     /// Text StyledProperty definition
     /// </summary>
@@ -92,6 +57,57 @@ public class EdgeButton : Button
         set => SetValue(IconProperty, value);
     }
 
+    /// <summary>
+    /// State StyledProperty definition
+    /// </summary>
+    public static readonly StyledProperty<EdgeButtonState> StateProperty =
+        AvaloniaProperty.Register<EdgeButton, EdgeButtonState>(nameof(State));
+
+    /// <summary>
+    /// Gets or sets the State property. This StyledProperty
+    /// indicates ....
+    /// </summary>
+    public EdgeButtonState State
+    {
+        get => this.GetValue(StateProperty);
+        private set => SetValue(StateProperty, value);
+    }
+
+    private void SetState(EdgeButtonState state)
+    {
+        SetValue(StateProperty, state);
+    }
+
+    private readonly StackPanel _content = new StackPanel
+    {
+        Orientation = Avalonia.Layout.Orientation.Horizontal
+    };
+
+    private TextBlock _text = new TextBlock
+    {
+        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+        Transitions = new Transitions
+                {
+                    new BrushTransition
+                    {
+                        Property = ForegroundProperty,
+                        Duration = TimeSpan.FromMilliseconds(150)
+                    }
+                }
+    };
+    private LucideIcon _icon = new LucideIcon
+    {
+        Size = 16,
+        Transitions = new Transitions
+                {
+                    new BrushTransition
+                    {
+                        Property = ForegroundProperty,
+                        Duration = TimeSpan.FromMilliseconds(150)
+                    }
+                }
+    };
+
     static EdgeButton()
     {
         VariantProperty.Changed.AddClassHandler<EdgeButton>((x, e) => x.UpdateStyle());
@@ -105,8 +121,6 @@ public class EdgeButton : Button
         Content = _content;
 
         ApplyInitialStyles();
-
-        WireEvents();
     }
 
     private void ApplyInitialStyles()
@@ -129,7 +143,6 @@ public class EdgeButton : Button
         Background = style.Background;
         _text.Foreground = style.Foreground;
         _icon.Foreground = style.Foreground;
-        
 
         Transitions = EdgeButtonTransitions();
     }
@@ -162,13 +175,13 @@ public class EdgeButton : Button
 
         BorderThickness = style.BorderThickness;
 
-        if(_isHovered)
+        if(State == EdgeButtonState.Hovered)
         {
             Background = style.HoverBackground;
             BorderBrush = style.HoverBorder;
             _text.Foreground = style.HoverForeground;
             _icon.Foreground = style.HoverForeground;
-        }else if (_isPressed)
+        }else if (State == EdgeButtonState.Pressed)
         {
             Background = style.PressBackground;
             BorderBrush = style.PressBorder;
@@ -242,36 +255,52 @@ public class EdgeButton : Button
         }
     }
 
-    
-
-    private void WireEvents()
+    protected override void OnPointerEntered(PointerEventArgs e)
     {
-        PointerEntered += (_, _) => HandlePointerEntered();
-        PointerExited += (_, _) => HandlePointerExited();
-        PointerPressed += (_, _) => HandlePointerPressed();
-        PointerReleased += (_, _) => HandlePointerReleased();
+        base.OnPointerEntered(e);
+        HandlePointerEntered();
+    }
+
+    protected override void OnPointerExited(PointerEventArgs e)
+    {
+        base.OnPointerExited(e);
+        HandlePointerExited();
+    }
+
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e);
+        HandlePointerPressed();
+    }
+
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        base.OnPointerReleased(e);
+        HandlePointerReleased();
     }
 
     protected virtual void OnEdgePointerEntered() { }
+    protected virtual void OnEdgePointerExited() { }
+    protected virtual void OnEdgePointerPressed() { }
+    protected virtual void OnEdgePointerReleased() { }
+
     private void HandlePointerEntered()
     {
-        _isHovered = true;
+        SetState(EdgeButtonState.Hovered);
         UpdateStyle();
         OnEdgePointerEntered();
     }
 
-    protected virtual void OnEdgePointerExited() { }
     private void HandlePointerExited()
     {
-        _isHovered = false;
+        SetState(EdgeButtonState.Normal);
         UpdateStyle();
         OnEdgePointerExited();
     }
 
-    protected virtual void OnEdgePointerPressed() { }
     private void HandlePointerPressed()
     {
-        _isPressed = true;
+        SetState(EdgeButtonState.Pressed);
 
         var builder = TransformOperations.CreateBuilder(1);
 
@@ -282,10 +311,9 @@ public class EdgeButton : Button
         OnEdgePointerPressed();
     }
 
-    protected virtual void OnEdgePointerReleased() { }
     private void HandlePointerReleased()
     {
-        _isPressed = false;
+        SetState(EdgeButtonState.Normal);
 
         var builder = TransformOperations.CreateBuilder(1);
 
