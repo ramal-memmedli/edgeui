@@ -27,7 +27,7 @@ public class EdgeButton : Button
                     new BrushTransition
                     {
                         Property = ForegroundProperty,
-                        Duration = TimeSpan.FromMilliseconds(250)
+                        Duration = TimeSpan.FromMilliseconds(150)
                     }
                 }
     };
@@ -39,7 +39,7 @@ public class EdgeButton : Button
                     new BrushTransition
                     {
                         Property = ForegroundProperty,
-                        Duration = TimeSpan.FromMilliseconds(250)
+                        Duration = TimeSpan.FromMilliseconds(150)
                     }
                 }
     };
@@ -97,6 +97,7 @@ public class EdgeButton : Button
         VariantProperty.Changed.AddClassHandler<EdgeButton>((x, e) => x.UpdateStyle());
         IconProperty.Changed.AddClassHandler<EdgeButton>((x, e) => x.UpdateContent());
         TextProperty.Changed.AddClassHandler<EdgeButton>((x, e) => x.UpdateContent());
+        IsEnabledProperty.Changed.AddClassHandler<EdgeButton>((x, e) => x.UpdateStyle());
     }
 
     public EdgeButton()
@@ -113,7 +114,7 @@ public class EdgeButton : Button
         MinWidth = 32;
         MinHeight = 32;
 
-        Padding = new Thickness(8);
+        Padding = new Thickness(12, 8);
 
         ClickMode = ClickMode.Release;
 
@@ -140,12 +141,17 @@ public class EdgeButton : Button
             new TransformOperationsTransition
             {
                 Property = RenderTransformProperty,
-                Duration = TimeSpan.FromMilliseconds(250)
+                Duration = TimeSpan.FromMilliseconds(150)
             },
             new BrushTransition
             {
                 Property = BackgroundProperty,
-                Duration = TimeSpan.FromMilliseconds(250)
+                Duration = TimeSpan.FromMilliseconds(150)
+            },
+            new BrushTransition
+            {
+                Property = BorderBrushProperty,
+                Duration = TimeSpan.FromMilliseconds(150)
             }
         };
     }
@@ -154,19 +160,28 @@ public class EdgeButton : Button
     {
         EdgeButtonStyle style = ResolveStyle();
 
+        BorderThickness = style.BorderThickness;
+
         if(_isHovered)
         {
             Background = style.HoverBackground;
+            BorderBrush = style.HoverBorder;
             _text.Foreground = style.HoverForeground;
             _icon.Foreground = style.HoverForeground;
         }else if (_isPressed)
         {
             Background = style.PressBackground;
+            BorderBrush = style.PressBorder;
             _text.Foreground = style.PressForeground;
             _icon.Foreground = style.PressForeground;
-        } else
+        }else if(!IsEnabled)
+        {
+            Opacity = 0.75;
+        }
+        else
         {
             Background = style.Background;
+            BorderBrush = style.Border;
             _text.Foreground = style.Foreground;
             _icon.Foreground = style.Foreground;
         }
@@ -215,7 +230,6 @@ public class EdgeButton : Button
         {
             _text.Text = Text;
             _content.Children.Add(_text);
-            Padding = new Thickness(8, 8, 12, 8);
         }
 
         if (Icon != null && !string.IsNullOrWhiteSpace(Text))
